@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML Генератор</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1><i class="fas fa-code"></i> XML Генератор</h1>
+            <p class="subtitle">Создавайте XML структуры визуально</p>
+        </header>
+
+        <div class="controls">
+            <button id="addRoot" class="btn btn-primary">
+                <i class="fas fa-plus-circle"></i> Добавить корневой элемент
+            </button>
+            <button id="exportBtn" class="btn btn-success">
+                <i class="fas fa-download"></i> Экспорт XML
+            </button>
+            <button id="importBtn" class="btn btn-secondary">
+                <i class="fas fa-upload"></i> Импорт XML
+            </button>
+            <button id="clearBtn" class="btn btn-danger">
+                <i class="fas fa-trash"></i> Очистить все
+            </button>
+        </div>
+
+        <div class="workspace">
+            <div id="treeContainer" class="tree-container">
+                <!-- Дерево будет генерироваться JavaScript -->
+            </div>
+
+            <div class="preview-section">
+                <h3><i class="fas fa-eye"></i> Предпросмотр XML</h3>
+                <div class="preview-controls">
+                    <button id="copyXml" class="btn-small" title="Копировать XML">
+                        <i class="fas fa-copy"></i> Копировать
+                    </button>
+                    <button id="formatXml" class="btn-small" title="Форматировать">
+                        <i class="fas fa-indent"></i> Форматировать
+                    </button>
+                    <span class="hint">(Ctrl + S — сохранить)</span>
+                </div>
+                <pre id="xmlPreview"><code>&lt;!-- XML появится здесь --&gt;</code></pre>
+            </div>
+        </div>
+
+        <div class="instructions">
+            <h3><i class="fas fa-info-circle"></i> Как использовать</h3>
+            <ul>
+                <li><span class="key">[+]</span> — Добавить обычный тег</li>
+                <li><span class="key">[Δ+]</span> — Добавить раздел (тег с вложенностью)</li>
+                <li><span class="key">[×]</span> — Удалить элемент</li>
+                <li>Кликните на тег или значение для редактирования</li>
+                <li>Перетаскивайте элементы для изменения порядка</li>
+            </ul>
+        </div>
+
+        <footer>
+            <p class="hint">XML Генератор © 2023 | Сохранено в LocalStorage</p>
+        </footer>
+    </div>
+
+    <!-- Модальное окно импорта -->
+    <div id="importModal" class="modal">
+        <div class="modal-content">
+            <h3><i class="fas fa-upload"></i> Импорт XML</h3>
+            <textarea id="importXmlText" placeholder="Вставьте XML код сюда..."></textarea>
+            <div class="modal-actions">
+                <button id="importConfirm" class="btn btn-primary">Импортировать</button>
+                <button id="importCancel" class="btn btn-secondary">Отмена</button>
+            </div>
+        </div>
+    </div>
+
+    <input type="file" id="fileInput" accept=".xml" style="display: none;">
+
+    <script src="script.js"></script>
+</body>
+</html>
