@@ -1,11 +1,9 @@
 document.addEventListener('DOMContentLoaded', function() {
-    // Состояние приложения
     const state = {
         elements: [],
         nextId: 1
     };
 
-    // DOM элементы
     const treeContainer = document.getElementById('treeContainer');
     const xmlPreview = document.getElementById('xmlPreview');
     const addRootBtn = document.getElementById('addRoot');
@@ -20,10 +18,8 @@ document.addEventListener('DOMContentLoaded', function() {
     const importXmlText = document.getElementById('importXmlText');
     const fileInput = document.getElementById('fileInput');
 
-    // Инициализация из LocalStorage
     loadFromLocalStorage();
 
-    // Создание корневого элемента
     function createElement(tag = 'element', value = '', isSection = false, parentId = null) {
         const element = {
             id: state.nextId++,
@@ -48,7 +44,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return element;
     }
 
-    // Поиск элемента по ID
     function findElementById(id, elements = state.elements) {
         for (const element of elements) {
             if (element.id === id) return element;
@@ -58,7 +53,6 @@ document.addEventListener('DOMContentLoaded', function() {
         return null;
     }
 
-    // Удаление элемента
     function deleteElement(id) {
         const removeFromArray = (arr, id) => {
             const index = arr.findIndex(el => el.id === id);
@@ -81,32 +75,27 @@ document.addEventListener('DOMContentLoaded', function() {
         renderTree();
     }
 
-    // Рендеринг дерева
     function renderTree() {
         treeContainer.innerHTML = '';
         
         if (state.elements.length === 0) {
             treeContainer.innerHTML = `
-                <div class="empty-state">
-                    <i class="fas fa-folder-open" style="font-size: 48px; color: var(--text-secondary); margin-bottom: 20px;"></i>
-                    <p style="color: var(--text-secondary); text-align: center;">Добавьте корневой элемент, чтобы начать</p>
+                <div class="empty-state" style="text-align: center; padding: 40px; color: var(--text-secondary);">
+                    <i class="fas fa-folder-open" style="font-size: 48px; margin-bottom: 20px;"></i>
+                    <p>Добавьте корневой элемент, чтобы начать</p>
                 </div>
             `;
             return;
         }
         
         state.elements.forEach(element => renderElement(element, treeContainer));
-        
-        // Обновляем превью
         updateXmlPreview();
     }
 
-    // Рендеринг одного элемента
     function renderElement(element, container, level = 0) {
         const elementDiv = document.createElement('div');
         elementDiv.className = 'xml-element';
         elementDiv.dataset.id = element.id;
-        elementDiv.draggable = true;
         
         let contentHTML = `
             <div class="element-content">
@@ -114,15 +103,21 @@ document.addEventListener('DOMContentLoaded', function() {
         `;
         
         if (element.isSection) {
-            contentHTML += `<div class="element-value" contenteditable="false" style="color: var(--text-secondary);">(раздел)</div>`;
+            contentHTML += `
+                <span style="color: var(--text-secondary);">:</span>
+                <div class="element-value" contenteditable="true" data-field="value" placeholder="значение (опционально)">${escapeHtml(element.value)}</div>
+                <span class="hint" style="margin-left: 5px;">(раздел)</span>
+            `;
         } else {
-            contentHTML += `<span style="color: var(--text-secondary);">:</span>
-                           <div class="element-value" contenteditable="true" data-field="value">${escapeHtml(element.value)}</div>`;
+            contentHTML += `
+                <span style="color: var(--text-secondary);">:</span>
+                <div class="element-value" contenteditable="true" data-field="value">${escapeHtml(element.value)}</div>
+            `;
         }
         
         contentHTML += `
                 <div class="element-actions">
-                    <button class="action-btn add-btn" title="Добавить тег">
+                    <button class="action-btn add-btn" title="Добавить обычный тег">
                         <i class="fas fa-plus"></i>
                     </button>
                     <button class="action-btn add-section-btn" title="Добавить раздел">
@@ -138,7 +133,6 @@ document.addEventListener('DOMContentLoaded', function() {
         elementDiv.innerHTML = contentHTML;
         container.appendChild(elementDiv);
         
-        // Обработчики событий для кнопок
         const addBtn = elementDiv.querySelector('.add-btn');
         const addSectionBtn = elementDiv.querySelector('.add-section-btn');
         const deleteBtn = elementDiv.querySelector('.delete-btn');
@@ -146,11 +140,11 @@ document.addEventListener('DOMContentLoaded', function() {
         const valueField = elementDiv.querySelector('[data-field="value"]');
         
         addBtn.addEventListener('click', () => {
-            createElement('новый_тег', '', false, element.id);
+            createElement('тег', 'значение', false, element.id);
         });
         
         addSectionBtn.addEventListener('click', () => {
-            createElement('новый_раздел', '', true, element.id);
+            createElement('раздел', '', true, element.id);
         });
         
         deleteBtn.addEventListener('click', () => {
@@ -159,9 +153,14 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Редактирование тега
         tagField.addEventListener('blur', () => {
-            element.tag = tagField.textContent.trim() || 'тег';
+            const newTag = tagField.textContent.trim();
+            if (newTag && /^[a-zA-Z_][a-zA-Z0-9_\-\.]*$/.test(newTag)) {
+                element.tag = newTag;
+            } else {
+                tagField.textContent = element.tag;
+                alert('Имя тега должно начинаться с буквы и содержать только буквы, цифры, _, -, .');
+            }
             saveToLocalStorage();
             updateXmlPreview();
         });
@@ -173,29 +172,19 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
         
-        // Редактирование значения
-        if (valueField) {
-            valueField.addEventListener('blur', () => {
-                element.value = valueField.textContent.trim();
-                saveToLocalStorage();
-                updateXmlPreview();
-            });
-            
-            valueField.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    valueField.blur();
-                }
-            });
-        }
+        valueField.addEventListener('blur', () => {
+            element.value = valueField.textContent.trim();
+            saveToLocalStorage();
+            updateXmlPreview();
+        });
         
-        // Drag & Drop
-        elementDiv.addEventListener('dragstart', handleDragStart);
-        elementDiv.addEventListener('dragover', handleDragOver);
-        elementDiv.addEventListener('drop', handleDrop);
-        elementDiv.addEventListener('dragend', handleDragEnd);
+        valueField.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                valueField.blur();
+            }
+        });
         
-        // Рендеринг дочерних элементов
         if (element.children.length > 0) {
             const childrenDiv = document.createElement('div');
             childrenDiv.className = 'children';
@@ -207,29 +196,37 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     }
 
-    // Генерация XML
     function generateXml(element, indent = 0) {
         const indentStr = '  '.repeat(indent);
         
         if (element.isSection) {
-            let xml = `${indentStr}<${element.tag}>\n`;
+            // Раздел может иметь значение как атрибут или как текст
+            let hasChildren = element.children.length > 0;
+            let hasValue = element.value && element.value.trim() !== '';
             
-            if (element.value) {
-                xml += `${indentStr}  ${escapeXml(element.value)}\n`;
+            if (!hasChildren && !hasValue) {
+                // Пустой тег
+                return `${indentStr}<${element.tag} />\n`;
+            } else if (!hasChildren && hasValue) {
+                // Тег только со значением
+                return `${indentStr}<${element.tag}>${escapeXml(element.value)}</${element.tag}>\n`;
+            } else if (hasChildren && hasValue) {
+                // Тег со значением-атрибутом и детьми
+                return `${indentStr}<${element.tag} value="${escapeXml(element.value)}">\n` +
+                       element.children.map(child => generateXml(child, indent + 1)).join('') +
+                       `${indentStr}</${element.tag}>\n`;
+            } else {
+                // Тег только с детьми
+                return `${indentStr}<${element.tag}>\n` +
+                       element.children.map(child => generateXml(child, indent + 1)).join('') +
+                       `${indentStr}</${element.tag}>\n`;
             }
-            
-            element.children.forEach(child => {
-                xml += generateXml(child, indent + 1);
-            });
-            
-            xml += `${indentStr}</${element.tag}>\n`;
-            return xml;
         } else {
+            // Обычный тег
             return `${indentStr}<${element.tag}>${escapeXml(element.value)}</${element.tag}>\n`;
         }
     }
 
-    // Обновление превью XML
     function updateXmlPreview() {
         if (state.elements.length === 0) {
             xmlPreview.innerHTML = '<code>&lt;!-- Добавьте элементы для генерации XML --&gt;</code>';
@@ -237,70 +234,84 @@ document.addEventListener('DOMContentLoaded', function() {
         }
         
         let xml = '<?xml version="1.0" encoding="UTF-8"?>\n';
-        xml += '<root>\n';
         
-        state.elements.forEach(element => {
-            xml += generateXml(element, 1);
-        });
+        // Если есть несколько корневых элементов, оборачиваем в root
+        if (state.elements.length > 1) {
+            xml += '<root>\n';
+            state.elements.forEach(element => {
+                xml += generateXml(element, 1);
+            });
+            xml += '</root>';
+        } else {
+            xml += generateXml(state.elements[0], 0);
+        }
         
-        xml += '</root>';
-        xmlPreview.textContent = xml;
-        
-        // Подсветка синтаксиса (простая)
+        xmlPreview.textContent = formatXml(xml);
         highlightXml();
     }
 
-    // Простая подсветка XML
+    function formatXml(xml) {
+        // Простое форматирование отступов
+        let formatted = '';
+        let indent = 0;
+        let inTag = false;
+        
+        for (let i = 0; i < xml.length; i++) {
+            const char = xml[i];
+            const nextChar = xml[i + 1];
+            
+            if (char === '<' && nextChar === '/') {
+                // Закрывающий тег
+                indent--;
+                formatted += '\n' + '  '.repeat(indent) + char;
+            } else if (char === '<') {
+                // Открывающий тег
+                if (i > 0 && xml[i-1] !== '\n') {
+                    formatted += '\n' + '  '.repeat(indent);
+                }
+                formatted += char;
+                if (nextChar !== '?' && nextChar !== '!' && nextChar !== '/') {
+                    indent++;
+                }
+            } else if (char === '>' && nextChar === '<') {
+                formatted += char;
+            } else {
+                formatted += char;
+            }
+        }
+        
+        return formatted.trim();
+    }
+
     function highlightXml() {
         const code = xmlPreview.textContent;
         let highlighted = code
-            .replace(/&lt;(\/?)([\wа-яА-Я_\-]+)&gt;/g, '<span style="color: #569cd6;">&lt;$1$2&gt;</span>')
+            .replace(/&lt;(\/?)([\w\-\.]+)([^>]*?)&gt;/g, '<span style="color: #569cd6;">&lt;$1$2$3&gt;</span>')
             .replace(/&lt;!--(.*?)--&gt;/g, '<span style="color: #57a64a;">&lt;!--$1--&gt;</span>')
-            .replace(/&quot;(.*?)&quot;/g, '<span style="color: #ce9178;">&quot;$1&quot;</span>')
-            .replace(/&apos;(.*?)&apos;/g, '<span style="color: #ce9178;">&apos;$1&apos;</span>')
-            .replace(/&lt;\?xml(.*?)\?&gt;/g, '<span style="color: #808080;">&lt;?xml$1?&gt;</span>');
+            .replace(/&quot;([^&]+)&quot;/g, '<span style="color: #ce9178;">&quot;$1&quot;</span>')
+            .replace(/&lt;\?xml([^&]+)\?&gt;/g, '<span style="color: #808080;">&lt;?xml$1?&gt;</span>')
+            .replace(/(&lt;\/?[\w\-\.]+&gt;)/g, '<span style="color: #569cd6;">$1</span>');
         
         xmlPreview.innerHTML = highlighted;
     }
 
-    // Drag & Drop функции
-    let draggedElement = null;
-
-    function handleDragStart(e) {
-        draggedElement = this;
-        this.classList.add('dragging');
-        e.dataTransfer.effectAllowed = 'move';
-        e.dataTransfer.setData('text/html', this.innerHTML);
+    function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
     }
 
-    function handleDragOver(e) {
-        e.preventDefault();
-        e.dataTransfer.dropEffect = 'move';
-        this.classList.add('drag-over');
+    function escapeXml(text) {
+        if (!text) return '';
+        return text
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&apos;');
     }
 
-    function handleDrop(e) {
-        e.preventDefault();
-        this.classList.remove('drag-over');
-        
-        if (draggedElement !== this) {
-            // Простая реализация - можно расширить для изменения структуры дерева
-            const temp = draggedElement.innerHTML;
-            draggedElement.innerHTML = this.innerHTML;
-            this.innerHTML = temp;
-            
-            // Здесь можно добавить логику обновления state
-        }
-    }
-
-    function handleDragEnd() {
-        this.classList.remove('dragging');
-        document.querySelectorAll('.xml-element').forEach(el => {
-            el.classList.remove('drag-over');
-        });
-    }
-
-    // Сохранение в LocalStorage
+    // Сохранение и загрузка
     function saveToLocalStorage() {
         localStorage.setItem('xmlGeneratorState', JSON.stringify({
             elements: state.elements,
@@ -308,7 +319,6 @@ document.addEventListener('DOMContentLoaded', function() {
         }));
     }
 
-    // Загрузка из LocalStorage
     function loadFromLocalStorage() {
         const saved = localStorage.getItem('xmlGeneratorState');
         if (saved) {
@@ -318,30 +328,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 state.nextId = data.nextId || 1;
                 renderTree();
             } catch (e) {
-                console.error('Ошибка загрузки из LocalStorage:', e);
+                console.error('Ошибка загрузки:', e);
             }
         }
     }
 
-    // Вспомогательные функции
-    function escapeHtml(text) {
-        const div = document.createElement('div');
-        div.textContent = text;
-        return div.innerHTML;
-    }
-
-    function escapeXml(text) {
-        return text
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&apos;');
-    }
-
-    // Обработчики событий кнопок
+    // Обработчики кнопок
     addRootBtn.addEventListener('click', () => {
-        createElement('main', '', true);
+        createElement('root', '', true);
     });
 
     exportBtn.addEventListener('click', () => {
@@ -363,7 +357,7 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     clearBtn.addEventListener('click', () => {
-        if (confirm('Очистить все элементы? Это действие нельзя отменить.')) {
+        if (confirm('Очистить все элементы?')) {
             state.elements = [];
             state.nextId = 1;
             saveToLocalStorage();
@@ -385,27 +379,26 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 
     formatXmlBtn.addEventListener('click', () => {
-        updateXmlPreview(); // Просто перерисовываем
+        updateXmlPreview();
     });
 
     importConfirm.addEventListener('click', () => {
         const xmlText = importXmlText.value.trim();
         if (xmlText) {
-            // Простой парсинг XML (можно улучшить)
             try {
-                // Очищаем текущее состояние
+                // Создаем пример для демонстрации
                 state.elements = [];
                 state.nextId = 1;
                 
-                // Парсим XML (упрощенная версия)
-                parseXml(xmlText);
+                // Простой парсинг
+                parseSimpleXml(xmlText);
                 
                 saveToLocalStorage();
                 renderTree();
                 importModal.style.display = 'none';
                 importXmlText.value = '';
             } catch (e) {
-                alert('Ошибка парсинга XML: ' + e.message);
+                alert('Ошибка: ' + e.message);
             }
         }
     });
@@ -415,74 +408,71 @@ document.addEventListener('DOMContentLoaded', function() {
         importXmlText.value = '';
     });
 
-    // Простой парсер XML (базовый)
-    function parseXml(xmlString) {
-        // Удаляем декларацию XML
+    function parseSimpleXml(xmlString) {
+        // Упрощенный парсер для демонстрации
         xmlString = xmlString.replace(/<\?xml.*?\?>/g, '');
         
-        // Удаляем комментарии
-        xmlString = xmlString.replace(/<!--.*?-->/gs, '');
+        const parser = new DOMParser();
+        const xmlDoc = parser.parseFromString(xmlString, 'application/xml');
         
-        // Ищем корневой элемент
-        const rootMatch = xmlString.match(/<(\w+)>([\s\S]*)<\/\1>/);
-        if (!rootMatch) {
-            throw new Error('Корневой элемент не найден');
+        if (xmlDoc.getElementsByTagName('parsererror').length > 0) {
+            throw new Error('Некорректный XML');
         }
         
-        const rootTag = rootMatch[1];
-        const rootContent = rootMatch[2];
-        
-        // Создаем корневой элемент
-        const rootElement = createElement(rootTag, '', true);
-        
-        // Рекурсивно парсим содержимое
-        parseXmlContent(rootContent, rootElement.id);
-    }
-
-    function parseXmlContent(content, parentId) {
-        const tagRegex = /<(\w+)>([^<]*)<\/\1>|<(\w+)>([\s\S]*?)<\/\3>/g;
-        let match;
-        
-        while ((match = tagRegex.exec(content)) !== null) {
-            const tag = match[1] || match[3];
-            const value = match[2] || match[4];
+        function parseNode(node, parentId = null) {
+            const tagName = node.nodeName;
+            const isElement = node.nodeType === 1; // ELEMENT_NODE
+            const hasChildren = node.childNodes.length > 0;
+            const textContent = node.textContent.trim();
             
-            // Проверяем, содержит ли значение вложенные теги
-            const hasNestedTags = /<(\w+)>/.test(value);
-            
-            if (hasNestedTags) {
-                const element = createElement(tag, '', true, parentId);
-                parseXmlContent(value, element.id);
-            } else {
-                createElement(tag, value.trim(), false, parentId);
+            if (isElement && tagName !== '#text') {
+                const isSection = hasChildren && node.childNodes.length > 1 || 
+                                 (hasChildren && node.childNodes[0].nodeType === 1);
+                
+                const element = createElement(tagName, '', isSection, parentId);
+                
+                // Добавляем атрибуты как дочерние элементы
+                if (node.attributes && node.attributes.length > 0) {
+                    for (let attr of node.attributes) {
+                        createElement('@' + attr.name, attr.value, false, element.id);
+                    }
+                }
+                
+                // Рекурсивно парсим детей
+                for (let child of node.childNodes) {
+                    parseNode(child, element.id);
+                }
+                
+                // Если есть текст напрямую
+                if (textContent && !isSection) {
+                    element.value = textContent;
+                }
             }
         }
+        
+        parseNode(xmlDoc.documentElement);
     }
 
     // Горячие клавиши
     document.addEventListener('keydown', (e) => {
-        // Ctrl + S для сохранения
         if ((e.ctrlKey || e.metaKey) && e.key === 's') {
             e.preventDefault();
             exportBtn.click();
         }
         
-        // Escape для закрытия модального окна
         if (e.key === 'Escape' && importModal.style.display === 'flex') {
             importModal.style.display = 'none';
         }
     });
 
-    // Закрытие модального окна при клике вне его
     importModal.addEventListener('click', (e) => {
         if (e.target === importModal) {
             importModal.style.display = 'none';
         }
     });
 
-    // Инициализация начального состояния
+    // Инициализация с примером
     if (state.elements.length === 0) {
-        // Создаем пример структуры
         const root = createElement('main', '', true);
         createElement('project', 'RTS', false, root.id);
         const meta = createElement('meta', '', true, root.id);
