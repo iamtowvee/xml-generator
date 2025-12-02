@@ -1,0 +1,409 @@
+:root {
+    --bg-color: #262c2e;
+    --shadow: #000000;
+    --text: #fefefe;
+    --text-secondary: #b2b2b2;
+    --accent: #F3BC17;
+    --element-bg: #2f3638;
+    --border-color: #3a4245;
+    --danger: #e74c3c;
+    --success: #2ecc71;
+    --primary: #3498db;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text);
+    line-height: 1.6;
+    padding: 20px;
+    min-height: 100vh;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+/* Заголовок */
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+h1 {
+    color: var(--accent);
+    margin-bottom: 10px;
+    font-size: 2.5rem;
+}
+
+h1 i {
+    margin-right: 15px;
+}
+
+.subtitle {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+}
+
+/* Кнопки управления */
+.controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px var(--shadow);
+}
+
+.btn-primary {
+    background-color: var(--primary);
+    color: white;
+}
+
+.btn-secondary {
+    background-color: var(--element-bg);
+    color: var(--text);
+    border: 1px solid var(--border-color);
+}
+
+.btn-success {
+    background-color: var(--success);
+    color: white;
+}
+
+.btn-danger {
+    background-color: var(--danger);
+    color: white;
+}
+
+.btn-small {
+    padding: 8px 16px;
+    font-size: 0.9rem;
+}
+
+/* Рабочая область */
+.workspace {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+@media (max-width: 900px) {
+    .workspace {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Дерево элементов */
+.tree-container {
+    background-color: var(--element-bg);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 5px 20px var(--shadow);
+    min-height: 500px;
+    overflow-y: auto;
+}
+
+.xml-element {
+    margin-bottom: 12px;
+    position: relative;
+}
+
+.element-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 15px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    border-left: 4px solid var(--accent);
+    transition: all 0.3s ease;
+}
+
+.element-content:hover {
+    background-color: rgba(0, 0, 0, 0.3);
+    transform: translateX(5px);
+}
+
+.element-tag {
+    font-weight: bold;
+    color: var(--accent);
+    min-width: 120px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    background-color: rgba(243, 188, 23, 0.1);
+    cursor: text;
+    outline: none;
+    border: 1px solid transparent;
+}
+
+.element-tag:focus {
+    border-color: var(--accent);
+    background-color: rgba(243, 188, 23, 0.2);
+}
+
+.element-value {
+    flex-grow: 1;
+    padding: 5px 10px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+    cursor: text;
+    outline: none;
+    border: 1px solid transparent;
+    color: var(--text);
+}
+
+.element-value:focus {
+    border-color: var(--primary);
+    background-color: rgba(52, 152, 219, 0.1);
+}
+
+.element-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background-color: var(--border-color);
+    color: var(--text);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+}
+
+.action-btn:hover {
+    background-color: var(--accent);
+    color: var(--bg-color);
+    transform: scale(1.1);
+}
+
+.delete-btn:hover {
+    background-color: var(--danger);
+    color: white;
+}
+
+.add-section-btn:hover {
+    background-color: var(--success);
+    color: white;
+}
+
+/* Вложенные элементы */
+.children {
+    margin-left: 40px;
+    margin-top: 10px;
+    padding-left: 20px;
+    border-left: 2px dashed var(--border-color);
+}
+
+/* Превию XML */
+.preview-section {
+    background-color: var(--element-bg);
+    border-radius: 10px;
+    padding: 25px;
+    box-shadow: 0 5px 20px var(--shadow);
+    display: flex;
+    flex-direction: column;
+}
+
+.preview-section h3 {
+    margin-bottom: 20px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.preview-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid var(--border-color);
+}
+
+#xmlPreview {
+    flex-grow: 1;
+    background-color: #1a1f21;
+    border-radius: 6px;
+    padding: 20px;
+    overflow: auto;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.5;
+    white-space: pre-wrap;
+    color: #e0e0e0;
+    min-height: 400px;
+}
+
+#xmlPreview code {
+    color: #f8f8f2;
+}
+
+/* Инструкции */
+.instructions {
+    background-color: var(--element-bg);
+    border-radius: 10px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 5px 20px var(--shadow);
+}
+
+.instructions h3 {
+    color: var(--accent);
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.instructions ul {
+    list-style: none;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 15px;
+}
+
+.instructions li {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    background-color: rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+}
+
+.key {
+    background-color: var(--accent);
+    color: var(--bg-color);
+    width: 30px;
+    height: 30px;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 0.9rem;
+}
+
+/* Футер */
+footer {
+    text-align: center;
+    padding-top: 20px;
+    border-top: 1px solid var(--border-color);
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+}
+
+.hint {
+    color: var(--text-secondary);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+/* Модальное окно */
+.modal {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: var(--element-bg);
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px var(--shadow);
+}
+
+.modal-content h3 {
+    margin-bottom: 20px;
+    color: var(--accent);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#importXmlText {
+    width: 100%;
+    height: 200px;
+    background-color: #1a1f21;
+    border: 1px solid var(--border-color);
+    border-radius: 6px;
+    padding: 15px;
+    color: var(--text);
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    resize: vertical;
+    margin-bottom: 20px;
+}
+
+.modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 15px;
+}
+
+/* Drag & Drop стили */
+.dragging {
+    opacity: 0.5;
+    transform: scale(0.95);
+}
+
+.drag-over {
+    border: 2px dashed var(--accent) !important;
+    background-color: rgba(243, 188, 23, 0.1) !important;
+}
+
+/* Анимации */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.xml-element {
+    animation: fadeIn 0.3s ease;
+  }
